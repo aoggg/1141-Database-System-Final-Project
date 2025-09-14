@@ -1,8 +1,8 @@
-PWD /Users/aoggg/Documents/Database System Project
+PWD /Users/aoggg/Documents/1141-Database-System-Final-Project
 INPUT /usr/local/texlive/2024/texmf.cnf
 INPUT /usr/local/texlive/2024/texmf-dist/web2c/texmf.cnf
 INPUT /usr/local/texlive/2024/texmf-var/web2c/xetex/xelatex.fmt
-INPUT /Users/aoggg/Documents/Database System Project/report.tex
+INPUT /Users/aoggg/Documents/1141-Database-System-Final-Project/report.tex
 OUTPUT report.log
 INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/amscls/amsart.cls
 INPUT /usr/local/texlive/2024/texmf-dist/tex/latex/amscls/amsart.cls
