@@ -1,0 +1,54 @@
+\section{Team Formation Requirements}
+\begin{enumerate}
+    \item 葉宥均, 113550002, Computer Science/Year 2
+    \item 林士紘, 113550007, Computer Science/Year 2
+    \item 歐羿廷, 113550055, Computer Science/Year 2
+    \item 張恩睿, 113550179, Computer Science/Year 2
+\end{enumerate}
+
+\section{Project Ideation Report}
+\subsection{Project Ideas}
+\ \\
+\title{\bf{1. 社團出缺席管理系統}}
+\begin{enumerate}
+    \item {\bf{Domain：}} \\教育、社團管理
+    \item {\bf{Problem Statement：}} \\這個應用程式旨在解決社團活動中，在 FB 社團留言或手動點名效率低落、紀錄容易遺失，以及統計出缺席資料耗時等問題，提供一個自動化且易於管理的解決方案。
+    \item {\bf{Data Specifications：}}
+        \begin{enumerate}
+            \item {\bf{Estimated database size：}} \\預估資料庫將包含約 100 筆社員資訊（姓名、學號等），以及約 5000 筆活動紀錄，每筆活動紀錄包含出席者資訊，因此總資料量相對較小。
+            \item {\bf{Data acquisition strategy：}} \\資料來源主要是透過手動輸入社團成員名單，以及在每次活動結束後，由社團幹部手動或透過系統匯入出席紀錄。
+        \end{enumerate}
+\end{enumerate}
+\ \\
+\title{\bf{2. FB 清交二手拍賣社團貼文資訊即時更新}}
+\begin{enumerate}
+    \item {\bf{Domain：}} \\電子商務、二手市場
+    \item {\bf{Problem Statement：}} \\希望解決 FB 的「清交二手大拍賣」社團上，使用者撰寫貼文時資訊雜亂、格式不統一，以及商品狀態變更時無法即時同步的問題。透過導入生成式 AI，應用程式能自動將使用者輸入的自然語言貼文內容，轉化為結構化的資料，從根本上改善資訊的準確性與可讀性，並確保商品資訊能即時更新。
+        \begin{enumerate}
+            \item {\bf{Estimated database size：}} \\資料量將會隨著時間大幅成長，預估會包含約 5,000 筆商品貼文資訊，每筆資訊包含商品描述、圖片、價格及狀態等，資料庫規模將會比第一個專題大得多
+            \item {\bf{Data acquisition strategy：}} \\主要透過使用者上傳貼文來獲取資料，導入AI輔助把貼文轉成需要的格式，使用者仍可以根據自己的需求更改內容。當使用者新增、編輯或刪除貼文時，資料庫會即時更新。
+        \end{enumerate}
+\end{enumerate}
+\ \\
+\title{\bf{3. Spotify 根據情緒推薦音樂}}
+\begin{enumerate}
+    \item {\bf{Domain：}} \\影音串流、人工智慧、穿戴式裝置
+    \item {\bf{Problem Statement：}} \\此專題旨在透過分析使用者運動手錶等穿戴式裝置所監測到的生理資訊（例如心率、活動量），推斷其情緒狀態，並據此為使用者推薦適合當下情緒的音樂，提供個人化且貼心的音樂體驗。
+        \begin{enumerate}
+            \item {\bf{Estimated database size：}} \\預計會包含大量使用者聆聽歷史（例如 1000 名使用者，每人有 1000 筆聆聽紀錄），以及其對應的生理監測數據。這將是一個非常龐大且複雜的資料集，資料量可能達到數百萬筆。
+            \item {\bf{Data acquisition strategy：}} \\資料獲取需要串接多個 API，例如 Spotify 的 API 來取得音樂資料，以及運動手錶或健康應用程式的 API 來取得生理數據。
+        \end{enumerate}
+\end{enumerate}
+
+\subsection{Reflection Questions}
+\ \\
+\title{\bf{1. Primary Interest}} 
+\begin{enumerate}
+    \item {\bf{Which idea are you the most interested in doing?}} \\FB 清交二手拍賣社團貼文資訊即時更新
+    \item {\bf{Provide detailed reasoning for your choice. (e.g., Shared Interests among team members, feasibility, etc.)}} \\因為大家都有在用 FB 清交二手拍，而且前陣子要買二手冰箱，一直不知道發文的人到底賣出去了沒，很不方便…
+\end{enumerate}
+\ \\
+\title{\bf{2. Implementation Concerns}}
+\begin{enumerate}
+    \item schema 不知道怎麼設計，將貼文用 AI 轉成需要的格式需要串 API 可能會遇到困難。
+\end{enumerate}

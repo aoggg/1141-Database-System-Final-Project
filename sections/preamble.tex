@@ -1,0 +1,79 @@
+%%%%% here is preamble %%%%%
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{xeCJK}
+\usepackage{fontspec}
+\usepackage{amsmath}
+
+\linespread{1.6}
+
+%%% hyperlink %%%
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,      
+    urlcolor=cyan,
+    pdftitle={Overleaf Example},
+    pdfpagemode=FullScreen,
+    }
+%%% hyperlink %%%
+
+%%% code %%%
+\usepackage{listings}
+\usepackage{xcolor}
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
+%%% code %%%
+
+%%% chinese %%%
+\setCJKmainfont[AutoFakeBold=3, AutoFakeSlant=.3]{NotoSerifTC-VariableFont_wght.ttf}
+%%% chinese %%%
+
+%%% style(margin)%%%
+\usepackage
+[
+    a4paper,
+    margin = 2.5cm
+]
+{geometry}
+%%% style(margin)%%%
+
+%%% insert pdf %%%
+\usepackage{pdfpages}
+%%% insert pdf %%%
+
+%%% insert figure %%%
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{float}
+\usepackage[figurename=Fig]{caption}
+%%% insert figure %%%
+% \setlength{\parskip}{1em} 
+% \setlength{\parindent}{1em} 
+% \renewcommand{\baselinestretch}{0.5}
+
+
+%%%%% here is preamble %%%%%
