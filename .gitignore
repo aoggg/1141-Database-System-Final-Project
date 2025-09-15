@@ -43,5 +43,6 @@
 *blx.bib
 .bak 
 .mtc
+.DS_Store
 build/
 *.xdv
