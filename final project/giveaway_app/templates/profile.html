@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <h1>個人檔案</h1>
+    <p>
+        <strong>姓名：</strong> {{ user['name'] }} <br>
+        <strong>帳號：</strong> @{{ user['username'] }} <br>
+        <strong>單位：</strong> {{ user['organization'] }}
+    </p>
+
+    <p>
+        <strong>信譽分數：</strong> {{ "%.1f"|format(user['avg_score']) }} 分 
+        <small>(共 {{ user['review_count'] }} 人評價)</small>
+    </p>
+
+    <p>
+        <a href="#">[修改密碼]</a> | 
+        <a href="#">[修改名稱]</a> | 
+        <a href="/logout">[登出]</a>
+    </p>
+
+    <hr>
+
+    <h2>我索取的物品</h2>
+    <ul>
+        {% for claim in claims %}
+            <li>
+                <strong>{{ claim['item_name'] }}</strong> (數量: {{ claim['quantity'] }})
+                <br>
+                來源貼文: {{ claim['post_title'] }} | 時間: {{ claim['trade_time'] }}
+                <br>
+
+                {% if claim['my_rating'] %}
+                    <span>已評價: {{ claim['my_rating'] }} 分</span>
+                {% else %}
+                    <a href="#">
+                        [去寫評價]
+                    </a>
+                {% endif %}
+            </li>
+            <br> {% else %}
+            <li>目前沒有索取紀錄。</li>
+        {% endfor %}
+    </ul>
+
+    <hr>
+
+    <h2>我刊登的貼文</h2>
+    <ul>
+        {% for post in posts %}
+            <li>
+                [ID: {{ post['post_id'] }}] <strong>{{ post['description'] }}</strong>
+                <br>
+                發布時間: {{ post['post_time'] }} | 物品數: {{ post['item_count'] }}
+                <br>
+                狀態: 
+                {% if post['available'] %}
+                    <span>進行中</span>
+                {% else %}
+                    <span>已結案</span>
+                {% endif %}
+
+                <form action="{{ url_for('delete_post', post_id=post['post_id']) }}" method="POST" style="display: inline;">
+                    <button type="submit" onclick="return confirm('確定要刪除嗎？底下物品都會不見喔！')">
+                        [刪除貼文]
+                    </button>
+                </form>
+            </li>
+            <br>
+        {% else %}
+            <li>目前沒有刊登紀錄。</li>
+        {% endfor %}
+    </ul>
+
+{% endblock %}

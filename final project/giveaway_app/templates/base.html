@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>校園贈物平台</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <script>
+            {% for message in messages %}
+                alert('{{ message }}');
+            {% endfor %}
+        </script>
+      {% endif %}
+    {% endwith %}
+    <div style="background-color: #eee; padding: 10px; margin-bottom: 20px;">
+        {% if session.get('user_id') %}
+            <p>嗨，<strong>{{ session['username'] }}</strong>！</p>
+            <a href="/profile">查看個人檔案</a>
+            <a href="/logout">登出</a>
+        {% else %}
+            <a href="/login">請先登入</a>
+        {% endif %}
+    </div>
+
+    <div class="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+</body>
+</html>

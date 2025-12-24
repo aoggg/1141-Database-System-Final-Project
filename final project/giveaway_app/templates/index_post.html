@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="view-switch-container" style="margin-bottom: 20px;">
+        <a href="/?view=post" class="btn btn-switch">📋 貼文檢視</a>
+        <a href="/?view=item" class="btn btn-switch active">📦 物品檢視</a>
+    </div>
+    {% for post in posts %}
+    
+        <div style="border: 1px solid black; margin: 20px; padding: 10px;">
+            <h3>[貼文 ID: {{ post['post_id'] }}] {{ post['description'] }}</h3>
+            <p>
+                <!-- 地點: {{ post['location_name'] }} |  -->
+                狀態: {{ '進行中' if post['available'] else '已結案' }}
+            </p>
+
+            <ul>
+                {% for item in post['items'] %}
+                <li>
+                    <strong>{{ item['item_name'] }}</strong> 
+                    (剩餘數量: {{ item['quantity'] }})
+                    
+                    {% if post['available'] and item['quantity'] > 0 %}
+                        <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" style="display: inline;">
+                            <input type="number" name="want_quantity" value="1" min="1" max="{{ item['quantity'] }}">
+                            <button type="submit">索取</button>
+                        </form>
+                    {% else %}
+                        <span>(無法索取)</span>
+                    {% endif %}
+                </li>
+                {% else %}
+                    <li>此貼文沒有物品 (出大事哇)</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    {% else %}
+        <p>目前完全沒有貼文資料。</p>
+    {% endfor %}
+
+{% endblock %}
