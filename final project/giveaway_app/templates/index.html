@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>校園贈物平台</title>
+</head>
+<body>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <script>
+            {% for message in messages %}
+                alert('{{ message }}');
+            {% endfor %}
+        </script>
+      {% endif %}
+    {% endwith %}
+    <div style="background-color: #eee; padding: 10px; margin-bottom: 20px;">
+        {% if session.get('user_id') %}
+            <p>嗨，<strong>{{ session['username'] }}</strong>！</p>
+            <a href="/logout">登出</a>
+        {% else %}
+            <a href="/login">請先登入</a>
+        {% endif %}
+    </div>
+
+    <h1>🎁 校園贈物清單</h1>
+    <p>歡迎來到交大/清大贈物網！目前共有 <strong>{{ items|length }}</strong> 樣物品。</p>
+    
+    <table border="1" cellpadding="10" style="border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>物品名稱</th>
+                <th>敘述</th>
+                <th>數量</th>
+                <th>地點</th>
+                <th>狀態</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item['item_name'] }}</td>
+                <td>{{ item['description'] }}</td>
+                <td>{{ item['quantity'] }}</td>
+                <td>{{ item['location_name'] }}</td>
+                
+                <td>
+                    {% if item['available'] %}
+                        <span style="color: green;">可索取</span>
+                    {% else %}
+                        <span style="color: red;">已下架</span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if item['available'] and item['quantity'] > 0 %}
+                        {% if session.get('user_id') %}
+                            <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
+    
+                                <input type="number" name="want_quantity" min="1" max="{{ item['quantity'] }}" value="1" style="width: 60px; padding: 5px;">
+                                
+                                <button type="submit" style="cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 5px 10px;">
+                                    索取
+                                </button>
+                            </form>
+                        {% else %}
+                            <a href="/login" style="color: blue;">登入後索取</a>
+                        {% endif %}
+                    {% else %}
+                        <span style="color: gray;">來晚了</span>
+                    {% endif %} 
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+    </table>
+
+</body>
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>使用者登入</title>
+</head>
+<body>
+    <h2>🔐 使用者登入</h2>
+    
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <!-- <ul style="color: red;">
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+        </ul> -->
+        <script>
+            {% for message in messages %}
+                alert('{{ message }}')
+            {% endfor %}
+        </script>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST">
+        <div>
+            <label>帳號 (Username):</label>
+            <input type="text" name="username" required>
+        </div>
+        <br>
+        <div>
+            <label>密碼 (Password):</label>
+            <input type="password" name="password" required>
+        </div>
+        <br>
+        <button type="submit">登入</button>
+    </form>
+    
+    <p><a href="/">回首頁</a></p>
+</body>
+</html>
