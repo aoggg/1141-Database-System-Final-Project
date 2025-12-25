@@ -84,7 +84,7 @@ def index():
         query_params = []
 
         if user_id:
-            sql += " AND p.user_id != %s"  # 這裡原本你寫錯成 cnt_sql，幫你修好了
+            sql += " AND p.user_id != %s"
             query_params.append(user_id)
 
         if category_filter:
@@ -125,12 +125,10 @@ def index():
         """
         query_params = []
 
-        # 過濾使用者
         if user_id:
             sql += " AND p.user_id != %s"
             query_params.append(user_id)
 
-        # 🟢 (新增) 過濾類別
         if category_filter:
             sql += " AND c.category_id = %s"
             query_params.append(category_filter)
