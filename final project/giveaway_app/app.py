@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from werkzeug.security import check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 import psycopg2
 import psycopg2.extras
 import os
@@ -383,6 +383,104 @@ def add_comment(post_id):
         return redirect(url_for('index'))
 
     return render_template('add_comment.html', post=post, post_id=post_id)
+
+@app.route('/edit_name', methods=['GET', 'POST'])
+def edit_name():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        new_name = request.form.get('name')
+
+        if not new_name:
+            flash('要輸入名字！')
+        else:
+            try:
+                update_sql = """
+                UPDATE users
+                SET name = %s
+                WHERE user_id = %s
+                """
+                cur.execute(update_sql, (new_name, session['user_id']))
+                conn.commit()
+                flash('名字修改成功！')
+                session['username'] = new_name
+                return redirect(url_for('profile'))
+            except Exception as e:
+                conn.rollback()
+                flash(f'修改失敗：{e}')
+    cur.close()
+    conn.close()
+    return render_template('edit_name.html')
+
+@app.route('/change_pwd', methods=['GET', 'POST'])
+def change_pwd():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        old_pwd = request.form.get('old_pwd')
+        new_pwd = request.form.get('new_pwd')
+        confirm_pwd = request.form.get('confirm_pwd')
+
+        conn = get_db_connection()
+        cur = conn.cursor()
+
+        pwd_sql = """
+        SELECT pwd
+        FROM account
+        WHERE user_id = %s
+        """
+
+        cur.execute(pwd_sql, (session['user_id'],))
+        result = cur.fetchone()
+
+        if not result:
+            flash('帳號異常，請重新登入')
+            return redirect(url_for('login'))
+        
+        hash_pwd = result[0]
+
+        if not check_password_hash(hash_pwd, old_pwd):
+            flash('舊密碼錯誤！')
+            cur.close()
+            conn.close()
+            return redirect(url_for('change_pwd'))
+        
+        if new_pwd != confirm_pwd:
+            flash('兩次輸入的密碼不一樣！')
+            cur.close()
+            conn.close()
+            return redirect(url_for('change_pwd'))
+        
+        new_hash = generate_password_hash(new_pwd)
+
+        try:
+            upd_sql = """
+            UPDATE account
+            SET pwd = %s
+            WHERE user_id = %s
+            """
+            cur.execute(upd_sql, (new_hash, session['user_id']))
+            conn.commit()
+            flash('密碼修改成功！請重新登入！')
+
+            session.clear()
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'修改失敗：{e}')
+            return redirect(url_for('change_pwd'))
+        
+        finally:
+            cur.close()
+            conn.close()
+
+    return render_template('change_pwd.html')
 
 # 啟動伺服器
 if __name__ == '__main__':

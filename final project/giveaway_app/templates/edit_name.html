@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>✏️ 修改顯示名稱</h2>
+    
+    <form action="{{ url_for('edit_name') }}" method="POST">
+        <label for="name">新名稱：</label>
+        <input type="text" name="name" value="{{ session['username'] }}" required>
+        
+        <br><br>
+        
+        <button type="submit">確認修改</button>
+        <a href="{{ url_for('profile') }}">取消</a>
+    </form>
+{% endblock %}

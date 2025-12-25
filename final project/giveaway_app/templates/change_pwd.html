@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>🔒 修改密碼</h2>
+    
+    <form action="{{ url_for('change_pwd') }}" method="POST">
+        
+        <label>舊密碼：</label><br>
+        <input type="password" name="old_pwd" required><br><br>
+        
+        <label>新密碼：</label><br>
+        <input type="password" name="new_pwd" required><br><br>
+        
+        <label>確認新密碼：</label><br>
+        <input type="password" name="confirm_pwd" required><br><br>
+        
+        <button type="submit">確認修改</button>
+        <a href="{{ url_for('profile') }}">取消</a>
+    </form>
+{% endblock %}
