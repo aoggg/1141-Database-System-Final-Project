@@ -21,6 +21,14 @@
     </p>
 
     <hr>
+    <h2>過去得到的評價</h2>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong> {{comment['rating']}} </strong> | {{comment['comment_str']}}
+            </li>
+        {% endfor %}
+    </ul>
 
     <h2>我索取的物品</h2>
     <ul>
@@ -34,7 +42,7 @@
                 {% if claim['my_rating'] %}
                     <span>已評價: {{ claim['my_rating'] }} 分</span>
                 {% else %}
-                    <a href="#">
+                    <a href="{{ url_for('add_comment', post_id=claim['post_id']) }}">
                         [去寫評價]
                     </a>
                 {% endif %}

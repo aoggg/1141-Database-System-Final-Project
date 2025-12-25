@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>✍️ 撰寫評價</h2>
+<p>
+    你正在評價貼文：<strong>{{ post['description'] }}</strong>
+</p>
+
+<hr>
+
+<form action="{{ url_for('add_comment', post_id=post_id) }}" method="POST">
+    
+    <label for="rating">給予分數 (1-5)：</label><br>
+    <select name="rating" id="rating" required style="padding: 5px; font-size: 16px;">
+        <option value="5">⭐⭐⭐⭐⭐ (5分 - 超讚)</option>
+        <option value="4">⭐⭐⭐⭐ (4分 - 很好)</option>
+        <option value="3">⭐⭐⭐ (3分 - 普通)</option>
+        <option value="2">⭐⭐ (2分 - 尚可)</option>
+        <option value="1">⭐ (1分 - 差勁)</option>
+    </select>
+    
+    <br><br>
+
+    <label for="comment_str">留言內容：</label><br>
+    <textarea name="comment_str" id="comment_str" rows="5" cols="40" required placeholder="寫下你的感謝或是物品狀況..."></textarea>
+    
+    <br><br>
+
+    <button type="submit" style="cursor: pointer; padding: 8px 16px; background-color: #28a745; color: white; border: none; font-size: 16px;">
+        送出評價
+    </button>
+    
+    <a href="{{ url_for('profile') }}" style="margin-left: 10px; color: gray;">取消返回</a>
+
+</form>
+
+{% endblock %}

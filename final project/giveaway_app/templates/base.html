@@ -16,6 +16,9 @@
       {% endif %}
     {% endwith %}
     <div style="background-color: #eee; padding: 10px; margin-bottom: 20px;">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
+            校園贈物網
+        </a>
         {% if session.get('user_id') %}
             <p>嗨，<strong>{{ session['username'] }}</strong>！</p>
             <a href="/profile">查看個人檔案</a>

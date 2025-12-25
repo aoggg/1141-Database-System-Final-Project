@@ -29,8 +29,16 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    view_mode = request.args.get('view', 'post')
     
+    url_view = request.args.get('view')
+
+    if url_view:
+        session['saved_view_mode'] = url_view
+        view_mode = url_view
+    
+    else:
+        view_mode = session.get('saved_view_mode', 'post')
+
     # 連上資料庫
     conn = get_db_connection()
     
@@ -240,6 +248,16 @@ def profile():
     cur.execute(info_sql, (user_id,))
     user_info = cur.fetchone()
 
+    comments_sql = """
+    SELECT c.comment_str, c.rating, c.comment_time, p.description
+    FROM (comment c LEFT JOIN post p
+            ON c.post_id = p.post_id)
+    WHERE p.user_id = %s
+    ORDER BY c.comment_time DESC
+    """
+    cur.execute(comments_sql, (user_id,))
+    past_comments = cur.fetchall()
+
     claim_sql = """
     SELECT t.trade_time, t.quantity, i.item_name, 
            p.description as post_title, p.post_id,
@@ -268,10 +286,11 @@ def profile():
     cur.close()
     conn.close()
 
-    return render_template('profile.html', user=user_info, claims=my_claims, posts=my_posts)
+    return render_template('profile.html', user=user_info, comments=past_comments, claims=my_claims, posts=my_posts)
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
 def delete_post(post_id):
+
     if 'user_id' not in session:
         return redirect(url_for('login'))
     
@@ -298,6 +317,72 @@ def delete_post(post_id):
         conn.close()
         
     return redirect(url_for('profile'))
+
+@app.route('/add_comment/<int:post_id>', methods=['GET', 'POST'])
+def add_comment(post_id):
+
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    if request.method == 'POST':
+        rating = request.form.get('rating')
+        comment_str = request.form.get('comment_str')
+
+        if not rating or not comment_str:
+            flash('請填寫分數與內容！')
+            return redirect(url_for('add_comment', post_id=post_id))
+
+        try:
+            find_comment = """
+            SELECT comment_id
+            FROM comment
+            WHERE post_id = %s and user_id = %s
+            """
+            cur.execute(find_comment, (post_id, user_id))
+            
+            if cur.fetchone():
+                flash('你已經評價過這篇貼文囉！')
+            else:
+                # 寫入評價
+                cur.execute("""
+                    INSERT INTO comment (post_id, user_id, rating, comment_str)
+                    VALUES (%s, %s, %s, %s)
+                """, (post_id, user_id, rating, comment_str))
+                conn.commit()
+                flash('評價成功！')
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'評價失敗: {e}')
+        
+        finally:
+            cur.close()
+            conn.close()
+
+        # 評價完，跳轉回個人頁面
+        return redirect(url_for('profile'))
+
+    # 3. 顯示表單 (GET)
+    # 我們需要抓貼文標題，讓使用者知道他在評哪一篇
+    post_sql = """
+    SELECT description
+    FROM post
+    WHERE post_id = %s
+    """
+    cur.execute(post_sql, (post_id,))
+    post = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not post:
+        flash('找不到該貼文！')
+        return redirect(url_for('index'))
+
+    return render_template('add_comment.html', post=post, post_id=post_id)
 
 # 啟動伺服器
 if __name__ == '__main__':
