@@ -2,22 +2,6 @@
 
 {% block content %}
 <h2>🔐 使用者登入</h2>
-    
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <!-- <ul style="color: red;">
-        {% for message in messages %}
-          <li>{{ message }}</li>
-        {% endfor %}
-        </ul> -->
-        <script>
-            {% for message in messages %}
-                alert('{{ message }}')
-            {% endfor %}
-        </script>
-      {% endif %}
-    {% endwith %}
-
     <form method="POST">
         <div>
             <label>帳號 (Username):</label>
