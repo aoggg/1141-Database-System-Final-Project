@@ -1,19 +1,42 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="view-switch-container" style="margin-bottom: 20px;">
-        <a href="/?view=post" class="btn btn-switch">📋 貼文檢視</a>
-        <a href="/?view=item" class="btn btn-switch active">📦 物品檢視</a>
+    <div class="view-switch-container" style="margin-bottom: 10px;">
+        <a href="{{ url_for('index', view='post', category=current_category) }}" class="btn btn-switch active">📋 貼文檢視</a>
+        <a href="{{ url_for('index', view='item', category=current_category) }}" class="btn btn-switch">📦 物品檢視</a>
     </div>
+
+    <div class="category-filter" style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        <strong>🔍 篩選類別：</strong>
+        
+        <a href="{{ url_for('index', view=view_mode) }}" 
+           style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline;' if not current_category else '' }}">
+           全部
+        </a>
+
+        {% for cat in categories %}
+            <a href="{{ url_for('index', view=view_mode, category=cat['category_id']) }}" 
+               style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline; color: red;' if current_category|string == cat['category_id']|string else '' }}">
+               {{ cat['name'] }}
+            </a>
+        {% endfor %}
+    </div>
+
+    <h1>🎁 校園贈物清單</h1>
+    <p>目前顯示 <strong>{{ total }}</strong> 篇貼文</p>
+
     {% for post in posts %}
     
         <div style="border: 1px solid black; margin: 20px; padding: 10px;">
+            
             <h3>[貼文 ID: {{ post['post_id'] }}] {{ post['description'] }}</h3>
+            by <a href="{{ url_for('public_profile', target_user_id=post['owner_id']) }}">
+                {{ post['owner_name'] }}
+            </a>
             <p>
                 <!-- 地點: {{ post['location_name'] }} |  -->
                 狀態: {{ '進行中' if post['available'] else '已結案' }}
             </p>
-
             <ul>
                 {% for item in post['items'] %}
                 <li>

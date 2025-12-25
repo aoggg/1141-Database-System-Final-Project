@@ -1,11 +1,7 @@
-<!DOCTYPE html>
-<html lang="zh-TW">
-<head>
-    <meta charset="UTF-8">
-    <title>使用者登入</title>
-</head>
-<body>
-    <h2>🔐 使用者登入</h2>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>🔐 使用者登入</h2>
     
     {% with messages = get_flashed_messages() %}
       {% if messages %}
@@ -35,7 +31,6 @@
         <br>
         <button type="submit">登入</button>
     </form>
-    
+    <p>還沒有帳號嗎？ <a href="{{ url_for('register') }}">去註冊一個</a></p>
     <p><a href="/">回首頁</a></p>
-</body>
-</html>
+{% endblock %}

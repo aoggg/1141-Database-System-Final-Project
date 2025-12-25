@@ -29,71 +29,121 @@ def get_db_connection():
 
 @app.route('/')
 def index():
-    
+    # 1. 處理視圖模式
     url_view = request.args.get('view')
-
     if url_view:
         session['saved_view_mode'] = url_view
         view_mode = url_view
-    
     else:
         view_mode = session.get('saved_view_mode', 'post')
 
-    # 連上資料庫
+    category_filter = request.args.get('category')
+
     conn = get_db_connection()
-    
-    # 建立 Cursor (游標)
-    # cursor_factory=psycopg2.extras.DictCursor 是一個小技巧
-    # 讓我們等一下可以用 item['item_name'] 這種直觀的方式取值
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    user_id = session.get('user_id')
+
+    cur.execute("SELECT * FROM categories ORDER BY category_id ASC")
+    all_categories = cur.fetchall()
 
     if view_mode == 'item':
         cnt_sql = """
-        SELECT sum(quantity)
-        FROM item
-        WHERE quantity > 0
+        SELECT sum(i.quantity)
+        FROM item i
+        JOIN post p ON i.post_id = p.post_id
+        LEFT JOIN categories c ON i.category_id = c.category_id
+        WHERE i.quantity > 0
         """
-        cur.execute(cnt_sql)
+        cnt_params = []
+
+        if user_id:
+            cnt_sql += " AND p.user_id != %s"
+            cnt_params.append(user_id)
+        
+        if category_filter:
+            cnt_sql += " AND c.category_id = %s"
+            cnt_params.append(category_filter)
+
+        cur.execute(cnt_sql, tuple(cnt_params))
         result = cur.fetchone()
         cnt = result[0] if result and result[0] else 0
 
         sql = """
         SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
-               c.name,
-               p.description, p.available, l.location_name, l.city, l.district, l.street, l.number
-        FROM ((item i LEFT JOIN post p
-                ON i.post_id = p.post_id) LEFT JOIN location l
-                ON i.location_id = l.location_id) LEFT JOIN categories c
-                ON i.category_id = c.category_id
+               c.name, c.category_id,
+               p.description, p.available, 
+               l.location_name, l.city, l.district, l.street, l.number,
+               u.name as user_name, u.user_id
+        FROM item i 
+        LEFT JOIN post p ON i.post_id = p.post_id
+        LEFT JOIN location l ON i.location_id = l.location_id
+        LEFT JOIN categories c ON i.category_id = c.category_id
+        LEFT JOIN users u ON p.user_id = u.user_id
         WHERE i.quantity > 0
+        """
+        query_params = []
+
+        if user_id:
+            sql += " AND p.user_id != %s"  # 這裡原本你寫錯成 cnt_sql，幫你修好了
+            query_params.append(user_id)
+
+        if category_filter:
+            sql += " AND c.category_id = %s"
+            query_params.append(category_filter)
+
+        sql += """
         ORDER BY i.quantity DESC,
                  p.post_id DESC,
                  c.category_id ASC
         """
-        cur.execute(sql)
+        cur.execute(sql, tuple(query_params))
         items = cur.fetchall()
 
         cur.close()
         conn.close()
 
-        return render_template('index_item.html', view_mode='item', items=items, total=cnt)
+        return render_template('index_item.html', 
+                               view_mode='item', 
+                               items=items, 
+                               total=cnt,
+                               categories=all_categories,
+                               current_category=category_filter)
     
     else:
         sql = """
         SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
-               c.name,
+               c.name, c.category_id,
                p.description, p.available, p.post_id,
-               l.location_name, l.city, l.district, l.street, l.number
-        FROM ((item i LEFT JOIN post p
-                ON i.post_id = p.post_id) LEFT JOIN location l
-                ON i.location_id = l.location_id) LEFT JOIN categories c
-                ON i.category_id = c.category_id
+               l.location_name, l.city, l.district, l.street, l.number,
+               u.name as user_name, u.user_id
+        FROM item i
+        LEFT JOIN post p ON i.post_id = p.post_id
+        LEFT JOIN location l ON i.location_id = l.location_id
+        LEFT JOIN categories c ON i.category_id = c.category_id
+        LEFT JOIN users u ON p.user_id = u.user_id
         WHERE p.available = TRUE
-        ORDER BY p.post_id DESC,
-                 c.category_id ASC
         """
-        cur.execute(sql)
+        query_params = []
+
+        # 過濾使用者
+        if user_id:
+            sql += " AND p.user_id != %s"
+            query_params.append(user_id)
+
+        # 🟢 (新增) 過濾類別
+        if category_filter:
+            sql += " AND c.category_id = %s"
+            query_params.append(category_filter)
+
+        sql += """
+        ORDER BY p.post_id DESC,
+            c.category_id ASC
+        """
+
+        cur.execute(sql, tuple(query_params))
         data = cur.fetchall()
+        cur.close()
+        conn.close()
 
         posts_map = {}
 
@@ -104,7 +154,9 @@ def index():
                     'post_id': p_id,
                     'description': i['description'],
                     'available': i['available'],
-                    'items': []
+                    'items': [],
+                    'owner_name': i['user_name'],
+                    'owner_id': i['user_id']
                 }
 
             item_data = {
@@ -121,8 +173,15 @@ def index():
             }
 
             posts_map[p_id]['items'].append(item_data)
+        
+        total_posts = len(posts_map)
 
-        return render_template('index_post.html', view_mode="post", posts=list(posts_map.values()))
+        return render_template('index_post.html', 
+                               view_mode="post", 
+                               posts=list(posts_map.values()),
+                               total=total_posts,
+                               categories=all_categories,
+                               current_category=category_filter)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -248,6 +307,14 @@ def profile():
     cur.execute(info_sql, (user_id,))
     user_info = cur.fetchone()
 
+    phone_sql = """
+    SELECT phone_number
+    FROM phone
+    WHERE user_id = %s
+    """
+    cur.execute(phone_sql, (user_id,))
+    phone = cur.fetchall()
+
     comments_sql = """
     SELECT c.comment_str, c.rating, c.comment_time, p.description
     FROM (comment c LEFT JOIN post p
@@ -286,7 +353,7 @@ def profile():
     cur.close()
     conn.close()
 
-    return render_template('profile.html', user=user_info, comments=past_comments, claims=my_claims, posts=my_posts)
+    return render_template('profile.html', user=user_info, comments=past_comments, claims=my_claims, posts=my_posts, phones=phone)
 
 @app.route('/delete_post/<int:post_id>', methods=['POST'])
 def delete_post(post_id):
@@ -481,6 +548,298 @@ def change_pwd():
             conn.close()
 
     return render_template('change_pwd.html')
+
+@app.route('/delete_account', methods=['POST'])
+def delete_account():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    try:
+        del_sql = """
+        DELETE FROM users
+        WHERE user_id = %s
+        """
+        cur.execute(del_sql, (session['user_id'],))
+        conn.commit()
+
+        session.clear()
+        flash('帳號已刪除')
+    
+    except Exception as e:
+        conn.rollback()
+        flash(f'刪除失敗：{e}')
+        return redirect(url_for('profile'))
+
+    finally:
+        cur.close()
+        conn.close()
+    
+    return redirect(url_for('index'))
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if 'user_id' in session:
+        return redirect(url_for('profile'))
+    
+    if request.method == 'POST':
+        name = request.form.get('name')
+        organization = request.form.get('organization')
+        username = request.form.get('username')
+        pwd = request.form.get('pwd')
+        confirm_pwd = request.form.get('confirm_pwd')
+        phone = request.form.get('phone')
+
+        if not (name and username and pwd and confirm_pwd and phone):
+            flash('請填寫所有必填欄位！')
+            return redirect(url_for('register'))
+        
+        if pwd != confirm_pwd:
+            flash('兩次密碼輸入不一樣！')
+            return redirect(url_for('register'))
+        
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        try:
+            check_username = """
+            SELECT user_id
+            FROM account
+            WHERE username = %s
+            """
+            cur.execute(check_username, (username,))
+            
+            if cur.fetchone():
+                flash('這個帳號已經被註冊過了！')
+                return redirect(url_for('register'))
+            
+            check_phone = """
+            SELECT phone_number
+            FROM phone
+            WHERE phone_number = %s
+            """
+            cur.execute(check_phone, (phone,))
+
+            if cur.fetchone():
+                flash('這支電話號碼已經被使用過了！')
+                return redirect(url_for('register'))
+
+            register_user = """
+            INSERT INTO users (name, organization)
+            VALUES (%s, %s)
+            RETURNING user_id
+            """
+            cur.execute(register_user, (name, organization))
+            new_user_id = cur.fetchone()[0]
+
+            hash_pwd = generate_password_hash(pwd)
+
+            register_account = """
+            INSERT INTO account (user_id, username, pwd)
+            VALUES (%s, %s, %s)
+            """
+            cur.execute(register_account, (new_user_id, username, hash_pwd))
+            
+            register_phone = """
+            INSERT INTO phone (phone_number, user_id)
+            VALUES (%s, %s) 
+            """
+            cur.execute(register_phone, (phone, new_user_id))
+
+            conn.commit()
+            flash('註冊成功！請登入')
+            return redirect(url_for('login'))
+        
+        except Exception as e:
+            conn.rollback()
+            flash('註冊失敗：{e}')
+            return redirect(url_for('register'))
+        
+        finally:
+            cur.close()
+            conn.close()
+
+    return render_template('register.html')
+
+@app.route('/user/<int:target_user_id>')
+def public_profile(target_user_id):
+    if 'user_id' in session and session['user_id'] == target_user_id:
+        return redirect(url_for('profile'))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    info_sql = """
+    SELECT u.name, u.organization, a.username,
+           COALESCE(AVG(c.rating), 0) as avg_score,
+           COUNT(c.comment_id) as review_count
+    FROM ((users u LEFT JOIN account a 
+            ON u.user_id = a.user_id) LEFT JOIN post p 
+            ON u.user_id = p.user_id) LEFT JOIN comment c 
+            ON p.post_id = c.post_id
+    WHERE u.user_id = %s
+    GROUP BY u.user_id, a.username;
+    """
+    cur.execute(info_sql, (target_user_id,))
+    user_info = cur.fetchone()
+
+    if not user_info:
+        flash('找不到該使用者！')
+        return redirect(url_for('index'))
+
+    post_sql = """
+    SELECT p.post_id,  p.description, p.post_time, p.available,
+           (SELECT COUNT(*) FROM item i WHERE i.post_id = p.post_id) as item_count
+    FROM post p
+    WHERE p.user_id = %s
+    ORDER BY p.post_time DESC
+    """
+    cur.execute(post_sql, (target_user_id,))
+    public_posts = cur.fetchall()
+
+    comments_sql = """
+    SELECT c.comment_str, c.rating, c.comment_time, p.description
+    FROM (comment c LEFT JOIN post p
+            ON c.post_id = p.post_id)
+    WHERE p.user_id = %s
+    ORDER BY c.comment_time DESC
+    """
+    cur.execute(comments_sql, (target_user_id,))
+    past_comments = cur.fetchall()
+
+    phone_sql = """
+    SELECT phone_number
+    FROM phone
+    WHERE user_id = %s
+    """
+    cur.execute(phone_sql, (target_user_id,))
+    phone = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template('public_profile.html', user=user_info, posts=public_posts, comments=past_comments, phones=phone)
+
+@app.route('/add_phone', methods=['GET', 'POST'])
+def add_phone():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    if request.method == 'POST':
+        phone = request.form.get('phone')
+        
+        if not phone:
+            flash('電話號碼不能為空！')
+        else:
+            try:
+                check_phone = """
+                SELECT user_id 
+                FROM phone 
+                WHERE phone_number = %s
+                """
+                cur.execute(check_phone, (phone,))
+                existing = cur.fetchone()
+                
+                if existing:
+                    if existing[0] == session['user_id']:
+                        flash('你已經綁定過這支電話囉！')
+                    else:
+                        flash('這支電話已經被其他帳號使用了！')
+                else:
+                    insert_phone = """
+                    INSERT INTO phone (phone_number, user_id)
+                    VALUES (%s, %s)
+                    """
+                    cur.execute(insert_phone, (phone, session['user_id']))
+                    conn.commit()
+                    flash('電話新增成功！')
+                    return redirect(url_for('profile'))
+                    
+            except Exception as e:
+                conn.rollback()
+                flash(f'新增失敗: {e}')
+    
+    cur.close()
+    conn.close()
+    
+    return render_template('add_phone.html')
+
+from datetime import datetime, timedelta # 記得在檔案最上面 import
+
+@app.route('/post_item', methods=['GET', 'POST'])
+def post_item():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    if request.method == 'POST':
+        description = request.form.get('description')
+        location_name = request.form.get('location_name')
+        city = request.form.get('city', '新竹市')
+        district = request.form.get('district', '東區')
+        street = request.form.get('street', '大學路')
+        number = request.form.get('number', '1001號')
+        
+        expiration_date = request.form.get('expiration_date')
+        if not expiration_date:
+             expiration_date = datetime.now() + timedelta(days=7)
+
+        item_names = request.form.getlist('item_name') 
+        quantities = request.form.getlist('quantity')
+        category_ids = request.form.getlist('category_id')
+
+        if not description or not item_names:
+            flash('請填寫完整資訊！')
+            return redirect(url_for('post_item'))
+
+        try:
+            cur.execute("""
+                INSERT INTO post (user_id, description)
+                VALUES (%s, %s) RETURNING post_id
+            """, (session['user_id'], description))
+            new_post_id = cur.fetchone()[0]
+
+            cur.execute("""
+                INSERT INTO location (location_name, city, district, street, number)
+                VALUES (%s, %s, %s, %s, %s) RETURNING location_id
+            """, (location_name, city, district, street, number))
+            new_location_id = cur.fetchone()[0]
+
+            for i_name, i_qty, i_cat in zip(item_names, quantities, category_ids):
+                if not i_name.strip(): 
+                    continue
+
+                cur.execute("""
+                    INSERT INTO item 
+                    (category_id, post_id, location_id, item_name, expiration_date, quantity)
+                    VALUES (%s, %s, %s, %s, %s, %s)
+                """, (i_cat, new_post_id, new_location_id, i_name, expiration_date, i_qty))
+
+            conn.commit()
+            flash(f'成功刊登貼文！包含了 {len(item_names)} 樣物品。')
+            return redirect(url_for('index'))
+
+        except Exception as e:
+            conn.rollback()
+            flash(f'刊登失敗: {e}')
+            return redirect(url_for('post_item'))
+        finally:
+            cur.close()
+            conn.close()
+
+    cur.execute("SELECT * FROM categories ORDER BY category_id ASC")
+    categories = cur.fetchall()
+    cur.close()
+    conn.close()
+
+    return render_template('post_item.html', categories=categories)
 
 # 啟動伺服器
 if __name__ == '__main__':

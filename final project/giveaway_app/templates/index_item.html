@@ -1,10 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="view-switch-container" style="margin-bottom: 20px;">
-        <a href="/?view=post" class="btn btn-switch">📋 貼文檢視</a>
-        <a href="/?view=item" class="btn btn-switch active">📦 物品檢視</a>
+
+    <div class="view-switch-container" style="margin-bottom: 10px;">
+        <a href="{{ url_for('index', view='post', category=current_category) }}" class="btn btn-switch active">📋 貼文檢視</a>
+        <a href="{{ url_for('index', view='item', category=current_category) }}" class="btn btn-switch">📦 物品檢視</a>
     </div>
+
+    <div class="category-filter" style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
+        <strong>🔍 篩選類別：</strong>
+        
+        <a href="{{ url_for('index', view=view_mode) }}" 
+           style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline;' if not current_category else '' }}">
+           全部
+        </a>
+
+        {% for cat in categories %}
+            <a href="{{ url_for('index', view=view_mode, category=cat['category_id']) }}" 
+               style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline; color: red;' if current_category|string == cat['category_id']|string else '' }}">
+               {{ cat['name'] }}
+            </a>
+        {% endfor %}
+    </div>
+
     <h1>🎁 校園贈物清單</h1>
     <p>歡迎來到交大/清大贈物網！目前共有 <strong>{{ total }}</strong> 樣物品。</p>
     

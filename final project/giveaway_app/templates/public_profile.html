@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="profile-container" style="max-width: 800px; margin: 0 auto;">
+
+    <div style="background: #e9ecef; padding: 20px; border-radius: 10px; text-align: center;">
+        <h1 style="margin: 0;">{{ user['name'] }}</h1>
+        <p style="color: gray;">@{{ user['username'] }} | {{ user['organization'] }}</p>
+        <p>
+            <strong>聯絡電話：</strong>
+            {% if phones %}
+                {% for p in phones %}
+                    <span>{{ p['phone_number'] }}</span>
+                    {% if not loop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                <span style="color: red;">(尚未綁定電話)</span>
+            {% endif %}
+        </p>
+        <div style="margin-top: 10px;">
+            <h2 style="margin: 0; color: #ffc107; display: inline-block;">
+                ⭐ {{ "%.1f"|format(user['avg_score']) }}
+            </h2>
+            <span style="color: gray;"> ({{ user['review_count'] }} 則評價)</span>
+        </div>
+    </div>
+
+    <hr>
+
+    <h3>{{ user['name'] }} 之前的評價</h3>
+    <ul>
+        {% for comment in comments %}
+            <li>
+                <strong> {{comment['rating']}} </strong> | {{comment['comment_str']}}
+            </li>
+        {% endfor %}
+    </ul>
+
+    <h3>{{ user['name'] }} 的刊登紀錄</h3>
+    
+    {% if posts %}
+        <ul style="list-style: none; padding: 0;">
+        {% for post in posts %}
+            <li style="border-bottom: 1px solid #eee; padding: 15px 0;">
+                <div style="font-weight: bold; font-size: 1.1em;">
+                    {{ post['description'] }}
+                </div>
+                
+                <div style="color: gray; font-size: 0.9em; margin: 5px 0;">
+                    發布於 {{ post['post_time'] }} | 包含 {{ post['item_count'] }} 樣物品
+                </div>
+
+                <div>
+                    {% if post['available'] %}
+                        <span style="color: green; border: 1px solid green; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">🟢 進行中</span>
+                    {% else %}
+                        <span style="color: red; border: 1px solid red; padding: 2px 6px; border-radius: 4px; font-size: 0.8em;">🔴 已結案</span>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p style="text-align: center; color: gray;">這位使用者還沒有刊登過任何東西。</p>
+    {% endif %}
+
+    <div style="margin-top: 30px; text-align: center;">
+        <a href="{{ url_for('index') }}" class="btn">⬅️ 返回首頁</a>
+    </div>
+
+</div>
+
+{% endblock %}

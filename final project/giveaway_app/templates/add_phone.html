@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>新增聯絡電話</h2>
+    <p>為了方便面交，請新增您的手機號碼。</p>
+    
+    <form action="{{ url_for('add_phone') }}" method="POST">
+        <label for="phone">手機號碼：</label>
+        <input type="tel" name="phone" placeholder="例: 0912345678" required>
+        
+        <br><br>
+        
+        <button type="submit">確認新增</button>
+        <a href="{{ url_for('profile') }}">取消返回</a>
+    </form>
+{% endblock %}

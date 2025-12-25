@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>📢 我要贈物</h2>
+    
+    <form action="{{ url_for('post_item') }}" method="POST">
+        
+        <fieldset style="border: 1px solid #007bff; padding: 15px; margin-bottom: 20px;">
+            <legend style="font-weight: bold; color: #007bff;">📝 貼文與面交資訊</legend>
+            
+            <label>貼文標題/描述：</label><br>
+            <textarea name="description" rows="2" style="width: 100%;" placeholder="例如：期末清倉，全部帶走優先..." required></textarea>
+            <br><br>
+
+            <label>面交地點名稱：</label>
+            <input type="text" name="location_name" placeholder="交大圖書館" required>
+            
+            <label>過期時間：</label>
+            <input type="datetime-local" name="expiration_date">
+            <small style="color: gray;">(所有物品將使用同一期限)</small>
+            
+            <input type="hidden" name="city" value="新竹市">
+            <input type="hidden" name="district" value="東區">
+            <input type="hidden" name="street" value="大學路">
+            <input type="hidden" name="number" value="1001號">
+        </fieldset>
+
+        <div id="items-container">
+            <div class="item-row" style="border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
+                <span style="font-weight: bold;">📦 物品</span>
+                <br>
+                
+                <label>名稱：</label>
+                <input type="text" name="item_name" required placeholder="物品名稱">
+                
+                <label>數量：</label>
+                <input type="number" name="quantity" value="1" min="1" style="width: 50px;" required>
+                
+                <label>分類：</label>
+                <select name="category_id">
+                    {% for cat in categories %}
+                        <option value="{{ cat['category_id'] }}">{{ cat['name'] }}</option>
+                    {% endfor %}
+                </select>
+
+                <button type="button" onclick="removeRow(this)" style="color: red; cursor: pointer;">❌</button>
+            </div>
+        </div>
+
+        <button type="button" onclick="addItem()" style="background-color: #17a2b8; color: white; padding: 5px 10px; margin-bottom: 20px; cursor: pointer;">
+            ➕ 再加一樣物品
+        </button>
+        <br>
+
+        <button type="submit" style="background-color: #28a745; color: white; padding: 10px 30px; border: none; cursor: pointer; font-size: 18px;">
+            🚀 全部刊登
+        </button>
+    </form>
+
+    <script>
+        function addItem() {
+            // 1. 找到容器
+            const container = document.getElementById('items-container');
+            // 2. 找到第一個 item-row 當作範本
+            const firstRow = container.querySelector('.item-row');
+            // 3. 複製它 (cloneNode(true) 代表連裡面的子元素一起複製)
+            const newRow = firstRow.cloneNode(true);
+            
+            // 4. 清空新複製出來的輸入框內容 (不然會留著上一格的字)
+            const inputs = newRow.querySelectorAll('input');
+            inputs.forEach(input => input.value = input.type === 'number' ? 1 : ''); // 數量重設為1，文字清空
+            
+            // 5. 放進容器
+            container.appendChild(newRow);
+        }
+
+        function removeRow(btn) {
+            const container = document.getElementById('items-container');
+            // 確保至少留一行，不要全部刪光光
+            if (container.querySelectorAll('.item-row').length > 1) {
+                btn.closest('.item-row').remove();
+            } else {
+                alert("至少要有一樣物品喔！");
+            }
+        }
+    </script>
+
+{% endblock %}
