@@ -12,7 +12,7 @@ app.secret_key = os.getenv("SECRET_KEY") # 這邊可以隨便放一個字串，�
 
 # 這裡設定資料庫
 DB_HOST = "localhost"
-DB_NAME = "final"  # 資料庫的名稱
+DB_NAME = "aogDB"  # 資料庫的名稱
 DB_USER = "postgres"  # 使用者帳號，預設應該都是 postgres
 DB_PASS = os.getenv("DB_PASSWORD")   # 設定的密碼，寫在 .env 裡面
 DB_PORT = "5432"
