@@ -1,47 +1,111 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>📝 註冊新帳號</h2>
-
-    <form action="{{ url_for('register') }}" method="POST">
+<div class="max-w-2xl mx-auto py-8">
+    <div class="bg-white rounded-[2.5rem] shadow-xl shadow-gray-100 border border-gray-100 overflow-hidden">
         
-        <fieldset style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-            <legend>基本資料</legend>
-            
-            <label>顯示名稱 (必填)：</label><br>
-            <input type="text" name="name" placeholder="例: 王小任" required>
-            <br><br>
+        <div class="h-2.5 bg-[#FF6B00]"></div>
+        
+        <div class="p-10 md:p-14">
+            <div class="text-center mb-12">
+                <div class="w-20 h-20 bg-[#FFF0E6] rounded-3xl flex items-center justify-center mx-auto mb-6">
+                    <i data-feather="user-plus" class="text-[#FF6B00] w-10 h-10"></i>
+                </div>
+                <h2 class="text-3xl font-black text-gray-900 tracking-tight">建立新帳號</h2>
+                <p class="text-sm text-gray-400 mt-3">加入 CampusShare，開啟您的校園共享生活</p>
+            </div>
 
-            <label>手機號碼 (必填)：</label><br>
-            <input type="tel" name="phone" placeholder="例: 0912345678" required>
-            <small style="color: gray;">(用於聯絡面交)</small>
-            <br><br>
+            <form action="{{ url_for('register') }}" method="POST" class="space-y-10">
+                
+                <section>
+                    <div class="flex items-center gap-2 mb-6 border-b border-gray-50 pb-2">
+                        <span class="bg-[#FF6B00] w-1 h-4 rounded-full"></span>
+                        <h3 class="font-bold text-gray-800">基本資料</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">顯示名稱</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i data-feather="user" class="w-4 h-4"></i></span>
+                                <input type="text" name="name" placeholder="例 : 王小任" required
+                                       class="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                            </div>
+                        </div>
 
-            <label>所屬單位 (選填)：</label><br>
-            <input type="text" name="organization" placeholder="例: NYCU CS">
-        </fieldset>
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">手機號碼</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i data-feather="phone" class="w-4 h-4"></i></span>
+                                <input type="tel" name="phone" placeholder="例 : 0912345678" required
+                                       class="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                            </div>
+                            <p class="text-[12.5px] text-gray-400 ml-1 italic">※ 僅用於聯繫面交事宜</p>
+                        </div>
 
-        <fieldset style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
-            <legend>登入資訊</legend>
+                        <div class="space-y-2 md:col-span-2">
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">所屬單位 (選填)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"></span>
+                                <input type="text" name="organization" placeholder="例 : NYCU CS"
+                                       class="block w-full pl-6 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <label>帳號 (Username)：</label><br>
-            <input type="text" name="username" placeholder="請輸入帳號" required>
-            <br><br>
+                <section>
+                    <div class="flex items-center gap-2 mb-6 border-b border-gray-50 pb-2">
+                        <span class="bg-[#FF6B00] w-1 h-4 rounded-full"></span>
+                        <h3 class="font-bold text-gray-800">登入資訊</h3>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <label class="block text-xs font-bold text-gray-400  tracking-widest ml-1">帳號 (Username)</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"><i data-feather="at-sign" class="w-4 h-4"></i></span>
+                                <input type="text" name="username" placeholder="請設定您的帳號" required
+                                       class="block w-full pl-11 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                            </div>
+                        </div>
 
-            <label>密碼：</label><br>
-            <input type="password" name="pwd" required>
-            <br><br>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">密碼</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"></span>
+                                    <input type="password" name="pwd" required
+                                           class="block w-full pl-6 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest ml-1">確認密碼</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400"></span>
+                                    <input type="password" name="confirm_pwd" required
+                                           class="block w-full pl-6 pr-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-            <label>確認密碼：</label><br>
-            <input type="password" name="confirm_pwd" required>
-        </fieldset>
-
-        <button type="submit" style="background-color: #007bff; color: white; padding: 10px 20px; border: none; cursor: pointer;">
-            註冊並送出
-        </button>
-
-        <span style="margin-left: 10px;">
-            已經有帳號了嗎？ <a href="{{ url_for('login') }}">直接登入</a>
-        </span>
-    </form>
+                <div class="pt-6">
+                    <button type="submit" 
+                            class="w-full bg-black text-white py-4 rounded-2xl font-bold text-base hover:bg-[#FF6B00] shadow-xl shadow-gray-200 transform active:scale-[0.98] transition-all duration-300">
+                        註冊並送出
+                    </button>
+                    
+                    <div class="mt-8 text-center border-t border-gray-50 pt-8">
+                        <p class="text-sm text-gray-500">
+                            已經有帳號了嗎？ 
+                            <a href="{{ url_for('login') }}" class="text-[#FF6B00] font-bold hover:underline ml-1">直接登入</a>
+                        </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
