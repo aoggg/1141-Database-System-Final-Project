@@ -55,10 +55,6 @@ def index():
         WHERE i.quantity > 0
         """
         cnt_params = []
-
-        if user_id:
-            cnt_sql += " AND p.user_id != %s"
-            cnt_params.append(user_id)
         
         if category_filter:
             cnt_sql += " AND c.category_id = %s"
@@ -82,10 +78,6 @@ def index():
         WHERE i.quantity > 0
         """
         query_params = []
-
-        if user_id:
-            sql += " AND p.user_id != %s"
-            query_params.append(user_id)
 
         if category_filter:
             sql += " AND c.category_id = %s"
@@ -124,10 +116,6 @@ def index():
         WHERE p.available = TRUE
         """
         query_params = []
-
-        if user_id:
-            sql += " AND p.user_id != %s"
-            query_params.append(user_id)
 
         if category_filter:
             sql += " AND c.category_id = %s"
@@ -247,30 +235,41 @@ def claim(item_id):
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
     try:
-        find_item = """
-            SELECT quantity, item_name
-            FROM item
-            WHERE item_id = %s;
+        check_id = """
+            SELECT *
+            FROM (item i LEFT JOIN post p
+                    ON i.post_id = p.post_id)
+            WHERE i.item_id = %s AND p.user_id = %s
         """
-
-        cur.execute(find_item, (item_id,))
-        item = cur.fetchone()
-
-        if (item and want_quantity > 0 and item['quantity'] >= want_quantity):
-            insert_trade = """
-                INSERT INTO trade (user_id, item_id, quantity, trade_time)
-                VALUES (%s, %s, %s, NOW());
-            """
-            cur.execute(insert_trade, (session['user_id'], item_id, want_quantity,))
-            conn.commit()
-
-            flash(f'索取成功！你拿到了 {want_quantity} 個 {item["item_name"]} 🎉')
-
-        elif item and item['quantity'] < want_quantity:
-            flash(f'庫存不夠！只有{item["quantity"]} 個！')
+        cur.execute(check_id, (item_id, current_user_id))
+        if (cur.fetchone()):
+            flash('這個是你自己的東西！')
 
         else:
-            flash('發生錯誤！請重新操作！')
+            find_item = """
+                SELECT quantity, item_name
+                FROM item
+                WHERE item_id = %s;
+            """
+
+            cur.execute(find_item, (item_id,))
+            item = cur.fetchone()
+
+            if (item and want_quantity > 0 and item['quantity'] >= want_quantity):
+                insert_trade = """
+                    INSERT INTO trade (user_id, item_id, quantity, trade_time)
+                    VALUES (%s, %s, %s, NOW());
+                """
+                cur.execute(insert_trade, (session['user_id'], item_id, want_quantity,))
+                conn.commit()
+
+                flash(f'索取成功！你拿到了 {want_quantity} 個 {item["item_name"]} 🎉')
+
+            elif item and item['quantity'] < want_quantity:
+                flash(f'庫存不夠！只有{item["quantity"]} 個！')
+
+            else:
+                flash('發生錯誤！請重新操作！')
 
     except Exception as e:
         conn.rollback()
