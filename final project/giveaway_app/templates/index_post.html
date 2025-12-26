@@ -83,12 +83,12 @@
                             </div>
 
                             {% if post['available'] and item['quantity'] > 0 %}
-                                <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" class="flex items-center gap-2">
+                                <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" class="flex items-center justify-end gap-1.5 mt-2">
                                     <input type="number" name="want_quantity" value="1" min="1" max="{{ item['quantity'] }}" 
                                         class="w-12 h-8 bg-white border border-gray-200 rounded-lg text-center text-xs outline-none focus:ring-1 focus:ring-[#FF6B00]">
                                     
-                                    <button type="submit" class="flex-1 h-8 bg-black text-white rounded-lg text-xs font-bold hover:bg-[#FF6B00] transition duration-200 shadow-sm">
-                                        索取
+                                    <button type="submit" class="w-20 h-8 bg-black text-white rounded-lg text-xs font-bold hover:bg-[#FF6B00] transition duration-200 shadow-sm">
+                                        立即索取
                                     </button>
                                 </form>
                             {% else %}
