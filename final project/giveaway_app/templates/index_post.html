@@ -1,6 +1,30 @@
 {% extends "base.html" %}
 
 {% block content %}
+
+
+<div class="mb-8">
+    <form action="{{ url_for('index') }}" method="GET" class="relative group">
+        <input type="hidden" name="view" value="{{ view_mode }}">
+        {% if current_category %}
+            <input type="hidden" name="category" value="{{ current_category }}">
+        {% endif %}
+        
+        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <i data-feather="search" class="w-5 h-5 text-gray-400 group-focus-within:text-[#FF6B00] transition-colors"></i>
+        </div>
+        
+        <input type="text" name="q" value="{{ q or '' }}" placeholder="搜尋物品或貼文描述 (例如：課本)..." 
+               class="block w-full pl-12 pr-20 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent transition-all placeholder:text-gray-300">
+        
+        <button type="submit" class="absolute right-2 top-2 bottom-2 bg-black text-white px-6 rounded-xl text-sm font-bold hover:bg-[#FF6B00] transition active:scale-95">
+            搜尋
+        </button>
+    </form>
+</div>
+
+
+
 <div class="flex flex-col md:flex-row gap-8">
     <aside class="w-full md:w-64 flex-shrink-0">
         <div class="bg-white rounded-2xl shadow-sm p-6 sticky top-24 border border-gray-100">
