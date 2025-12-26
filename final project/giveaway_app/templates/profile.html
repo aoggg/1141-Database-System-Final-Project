@@ -1,109 +1,129 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-    <h1>個人檔案</h1>
-    <p>
-        <strong>姓名：</strong> {{ user['name'] }} <br>
-        <strong>帳號：</strong> @{{ user['username'] }} <br>
-        <strong>單位：</strong> {{ user['organization'] }} <br>
-        <strong>聯絡電話：</strong>
-        {% if phones %}
-            {% for p in phones %}
-                <span>{{ p['phone_number'] }}</span>
-                {% if not loop.last %}, {% endif %}
-            {% endfor %}
-        {% else %}
-            <span style="color: red;">(尚未綁定電話)</span>
-        {% endif %}
+<div class="max-w-5xl mx-auto">
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+        <div class="bg-gray-600 h-6 relative"></div> <div class="px-8 pb-8 -mt-2 relative flex flex-col md:flex-row items-end justify-between gap-6">
+            <div class="flex flex-col md:flex-row items-end gap-6 w-full">
+                <div class="w-32 h-32 bg-white rounded-3xl p-2 shadow-lg">
+                    <div class="w-full h-full bg-[#FFF0E6] rounded-2xl flex items-center justify-center">
+                        <i data-feather="user" class="w-16 h-16 text-[#FF6B00]"></i>
+                    </div>
+                </div>
+                <div class="flex-1 mb-2">
+                    <h1 class="text-3xl font-bold text-gray-900">{{ user['name'] }}</h1>
+                    <p class="text-gray-500 font-medium">@{{ user['username'] }} · {{ user['organization'] }}</p>
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        {% if phones %}
+                            {% for p in phones %}
+                                <span class="bg-gray-100 text-gray-600 text-xs px-3 py-1 rounded-lg flex items-center">
+                                    <i data-feather="phone" class="w-3 h-3 mr-1"></i>{{ p['phone_number'] }}
+                                </span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="bg-red-50 text-red-500 text-xs px-3 py-1 rounded-lg border border-red-100">尚未綁定電話</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="bg-[#FFF0E6] p-4 rounded-2xl border border-[#FF6B00]/20 text-center min-w-[120px]">
+                    <span class="block text-[10px] uppercase font-bold text-[#FF6B00] mb-1 tracking-widest">用戶評分</span>
+                    <span class="text-3xl font-black text-[#FF6B00]">{{ "%.1f"|format(user['avg_score']) }}</span>
+                    <span class="block text-[10px] text-[#FF6B00]/70 mt-1">{{ user['review_count'] }} 人評價</span>
+                </div>
+            </div>
+        </div>
         
-    </p>
+        <div class="px-8 py-4 bg-gray-50 border-t border-gray-100 flex flex-wrap gap-4">
+            <a href="/edit_name" class="flex items-center text-sm font-bold text-gray-600 hover:text-[#FF6B00] transition"><i data-feather="edit-3" class="w-4 h-4 mr-2"></i>修改名稱</a>
+            <a href="/change_pwd" class="flex items-center text-sm font-bold text-gray-600 hover:text-[#FF6B00] transition"><i data-feather="lock" class="w-4 h-4 mr-2"></i>修改密碼</a>
+            <a href="/add_phone" class="flex items-center text-sm font-bold text-gray-600 hover:text-[#FF6B00] transition"><i data-feather="plus-circle" class="w-4 h-4 mr-2"></i>新增電話</a>
+            <a href="/logout" class="flex items-center text-sm font-bold text-red-500 hover:text-red-700 ml-auto transition"><i data-feather="log-out" class="w-4 h-4 mr-2"></i>登出</a>
+        </div>
+    </div>
 
-    <p>
-        <strong>信譽分數：</strong> {{ "%.1f"|format(user['avg_score']) }} 分 
-        <small>(共 {{ user['review_count'] }} 人評價)</small>
-    </p>
-
-    <p>
-        <a href="/change_pwd">[修改密碼]</a> | 
-        <a href="/edit_name">[修改名稱]</a> | 
-        <a href="/add_phone">[新增電話]</a> | 
-        <a href="/logout">[登出]</a>
-    </p>
-
-    <hr>
-    <h2>過去得到的評價</h2>
-    <ul>
-        {% for comment in comments %}
-            <li>
-                <strong> {{comment['rating']}} </strong> | {{comment['comment_str']}}
-            </li>
-        {% endfor %}
-    </ul>
-
-    <h2>我索取的物品</h2>
-    <ul>
-        {% for claim in claims %}
-            <li>
-                <strong>{{ claim['item_name'] }}</strong> (數量: {{ claim['quantity'] }})
-                <br>
-                來源貼文: {{ claim['post_title'] }} | 時間: {{ claim['trade_time'] }}
-                <br>
-
-                {% if claim['my_rating'] %}
-                    <span>已評價: {{ claim['my_rating'] }} 分</span>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <section class="space-y-4">
+            <h2 class="text-xl font-bold flex items-center px-2"><i data-feather="download" class="w-5 h-5 mr-2 text-[#FF6B00]"></i>我索取的物品</h2>
+            <div class="space-y-4">
+                {% for claim in claims %}
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-[#FF6B00]/20 transition-all">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-gray-800">{{ claim['item_name'] }} <span class="text-[#FF6B00] ml-1">x{{ claim['quantity'] }}</span></h4>
+                        <span class="text-[10px] text-gray-400 font-mono">{{ claim['trade_time'].strftime('%m/%d %H:%M') if claim['trade_time'] else '' }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-4 truncate">來源：{{ claim['post_title'] }}</p>
+                    
+                    {% if claim['my_rating'] %}
+                        <div class="flex items-center text-xs font-bold text-green-600 bg-green-50 px-3 py-2 rounded-xl">
+                            <i data-feather="star" class="w-3 h-3 mr-1 fill-current"></i> 已評分：{{ claim['my_rating'] }} 分
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('add_comment', post_id=claim['post_id']) }}" class="flex items-center justify-center w-full py-2 border-2 border-[#FF6B00] text-[#FF6B00] rounded-xl text-xs font-bold hover:bg-[#FF6B00] hover:text-white transition">
+                            去寫評價
+                        </a>
+                    {% endif %}
+                </div>
                 {% else %}
-                    <a href="{{ url_for('add_comment', post_id=claim['post_id']) }}">
-                        [去寫評價]
-                    </a>
-                {% endif %}
-            </li>
-            <br> {% else %}
-            <li>目前沒有索取紀錄。</li>
-        {% endfor %}
-    </ul>
+                <p class="text-gray-400 text-sm p-8 text-center bg-gray-50 rounded-2xl border-2 border-dashed">目前沒有索取紀錄</p>
+                {% endfor %}
+            </div>
+        </section>
 
-    <hr>
+        <div class="space-y-8">
+            <section class="space-y-4">
+                <h2 class="text-xl font-bold flex items-center px-2"><i data-feather="message-circle" class="w-5 h-5 mr-2 text-[#FF6B00]"></i>收到的評價</h2>
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 divide-y divide-gray-50">
+                    {% for comment in comments %}
+                    <div class="p-4 flex gap-4">
+                        <div class="bg-orange-100 h-10 w-10 rounded-xl flex items-center justify-center shrink-0">
+                            <span class="font-bold text-[#FF6B00]">{{ comment['rating'] }}</span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-700 leading-relaxed">{{ comment['comment_str'] }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">{{ comment['comment_time'].strftime('%Y-%m-%d') if comment['comment_time'] else '' }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
 
-    <h2>我刊登的貼文</h2>
-    <ul>
-        {% for post in posts %}
-            <li>
-                [ID: {{ post['post_id'] }}] <strong>{{ post['description'] }}</strong>
-                <br>
-                發布時間: {{ post['post_time'] }} | 物品數: {{ post['item_count'] }}
-                <br>
-                狀態: 
-                {% if post['available'] %}
-                    <span>進行中</span>
-                {% else %}
-                    <span>已結案</span>
-                {% endif %}
+            <section class="space-y-4">
+                <h2 class="text-xl font-bold flex items-center px-2"><i data-feather="upload" class="w-5 h-5 mr-2 text-[#FF6B00]"></i>我的刊登紀錄</h2>
+                <div class="space-y-3">
+                    {% for post in posts %}
+                    <div class="bg-white p-4 rounded-2xl border border-gray-100 flex justify-between items-center group">
+                        <div class="flex-1 truncate pr-4">
+                            <h4 class="font-bold text-sm text-gray-800 truncate">{{ post['description'] }}</h4>
+                            <div class="flex items-center text-[10px] text-gray-400 gap-3 mt-1">
+                                <span>{{ post['item_count'] }} 樣物品</span>
+                                <span class="{{ 'text-green-500' if post['available'] else 'text-gray-400' }}">● {{ '進行中' if post['available'] else '已結案' }}</span>
+                            </div>
+                        </div>
+                        <form action="{{ url_for('delete_post', post_id=post['post_id']) }}" method="POST">
+                            <button type="submit" onclick="return confirm('確定要刪除嗎？')" class="p-2 text-gray-300 hover:text-red-500 transition">
+                                <i data-feather="trash-2" class="w-5 h-5"></i>
+                            </button>
+                        </form>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+    </div>
 
-                <form action="{{ url_for('delete_post', post_id=post['post_id']) }}" method="POST" style="display: inline;">
-                    <button type="submit" onclick="return confirm('確定要刪除嗎？底下物品都會不見喔！')">
-                        [刪除貼文]
-                    </button>
-                </form>
-            </li>
-            <br>
-        {% else %}
-            <li>目前沒有刊登紀錄。</li>
-        {% endfor %}
-    </ul>
-
-    <hr>
-    <div style="margin-top: 50px; border: 1px solid red; padding: 10px;">
-        <h3 style="color: red;">⚠️ 危險區域</h3>
-        <p>刪除帳號後，您所有的貼文、索取紀錄、評價都將永久消失，無法復原。</p>
-        
+    <div class="mt-16 p-8 bg-red-50 rounded-3xl border-2 border-red-100 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="text-center md:text-left">
+            <h3 class="text-red-700 font-black text-xl flex items-center justify-center md:justify-start">
+                <i data-feather="alert-triangle" class="w-6 h-6 mr-2"></i>危險區域
+            </h3>
+            <p class="text-red-600/70 text-sm mt-1">刪除帳號後，您所有的資料將永久消失且無法恢復。</p>
+        </div>
         <form action="{{ url_for('delete_account') }}" method="POST">
-            <button type="submit" 
-                    style="background-color: red; color: white; cursor: pointer;"
-                    onclick="return confirm('警告：確定要永久刪除您的帳號嗎？此動作無法復原！');">
-                ☠️ 永久刪除帳號
+            <button type="submit" onclick="return confirm('警告：此動作無法復原！確定要刪除嗎？');" 
+                    class="bg-red-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-red-700 shadow-lg shadow-red-200 transition-all active:scale-95 flex items-center">
+                <i data-feather="user-x" class="w-5 h-5 mr-2"></i>永久刪除帳號
             </button>
         </form>
     </div>
-
+</div>
 {% endblock %}
