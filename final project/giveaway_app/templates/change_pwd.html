@@ -1,20 +1,51 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>🔒 修改密碼</h2>
-    
-    <form action="{{ url_for('change_pwd') }}" method="POST">
-        
-        <label>舊密碼：</label><br>
-        <input type="password" name="old_pwd" required><br><br>
-        
-        <label>新密碼：</label><br>
-        <input type="password" name="new_pwd" required><br><br>
-        
-        <label>確認新密碼：</label><br>
-        <input type="password" name="confirm_pwd" required><br><br>
-        
-        <button type="submit">確認修改</button>
-        <a href="{{ url_for('profile') }}">取消</a>
-    </form>
+<div class="max-w-md mx-auto">
+    <nav class="mb-8">
+        <a href="{{ url_for('profile') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-[#FF6B00] transition">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-1"></i> 返回個人檔案
+        </a>
+    </nav>
+
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="p-8">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="w-12 h-12 bg-[#FFF0E6] rounded-2xl flex items-center justify-center shrink-0">
+                    <i data-feather="shield" class="text-[#FF6B00] w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-900">修改登入密碼</h2>
+                    <p class="text-xs text-gray-400">請確保新密碼足夠強健</p>
+                </div>
+            </div>
+            
+            <form action="{{ url_for('change_pwd') }}" method="POST" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">舊密碼</label>
+                    <input type="password" name="old_pwd" required
+                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF6B00] outline-none transition">
+                </div>
+                
+                <hr class="border-gray-50">
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">新密碼</label>
+                    <input type="password" name="new_pwd" required
+                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF6B00] outline-none transition">
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">確認新密碼</label>
+                    <input type="password" name="confirm_pwd" required
+                           class="block w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#FF6B00] outline-none transition">
+                </div>
+                
+                <button type="submit" class="w-full bg-black text-white py-3.5 rounded-2xl font-bold text-sm hover:bg-[#FF6B00] transition shadow-lg mt-4">
+                    確認修改密碼
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}

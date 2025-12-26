@@ -1,88 +1,134 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h2>📢 我要贈物</h2>
-    
-    <form action="{{ url_for('post_item') }}" method="POST">
+<div class="max-w-3xl mx-auto py-8">
+    <nav class="mb-8 flex justify-between items-center">
         
-        <fieldset style="border: 1px solid #007bff; padding: 15px; margin-bottom: 20px;">
-            <legend style="font-weight: bold; color: #007bff;">📝 貼文與面交資訊</legend>
-            
-            <label>貼文標題/描述：</label><br>
-            <textarea name="description" rows="2" style="width: 100%;" placeholder="例如：期末清倉，全部帶走優先..." required></textarea>
-            <br><br>
+        <h2 class="text-2xl font-black text-gray-900 tracking-tight">📢 我要贈物</h2>
 
-            <label>面交地點名稱：</label>
-            <input type="text" name="location_name" placeholder="交大圖書館" required>
-            
-            <label>過期時間：</label>
-            <input type="datetime-local" name="expiration_date">
-            <small style="color: gray;">(所有物品將使用同一期限)</small>
-            
-            <input type="hidden" name="city" value="新竹市">
-            <input type="hidden" name="district" value="東區">
-            <input type="hidden" name="street" value="大學路">
-            <input type="hidden" name="number" value="1001號">
-        </fieldset>
+        <a href="{{ url_for('index') }}" class="inline-flex items-center text-sm text-gray-500 hover:text-[#FF6B00] transition">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-1"></i> 返回首頁
+        </a>
+        
+    </nav>
 
-        <div id="items-container">
-            <div class="item-row" style="border: 1px dashed #ccc; padding: 10px; margin-bottom: 10px; background: #f9f9f9;">
-                <span style="font-weight: bold;">📦 物品</span>
-                <br>
-                
-                <label>名稱：</label>
-                <input type="text" name="item_name" required placeholder="物品名稱">
-                
-                <label>數量：</label>
-                <input type="number" name="quantity" value="1" min="1" style="width: 50px;" required>
-                
-                <label>分類：</label>
-                <select name="category_id">
-                    {% for cat in categories %}
-                        <option value="{{ cat['category_id'] }}">{{ cat['name'] }}</option>
-                    {% endfor %}
-                </select>
+    <form action="{{ url_for('post_item') }}" method="POST" class="space-y-8">
+        
+        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 bg-[#FFF0E6] rounded-xl flex items-center justify-center">
+                        <i data-feather="map-pin" class="text-[#FF6B00] w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800">貼文與面交資訊</h3>
+                </div>
 
-                <button type="button" onclick="removeRow(this)" style="color: red; cursor: pointer;">❌</button>
+                <div class="space-y-6">
+                    <div>
+                        <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">貼文描述</label>
+                        <textarea name="description" rows="2" required placeholder="例如：期末清倉，全部帶走優先..." 
+                                  class="block w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all resize-none"></textarea>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">面交地點</label>
+                            <input type="text" name="location_name" placeholder="例: 交大圖書館" required
+                                   class="block w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 ml-1">過期時間 (所有物品將使用同一期限)</label>
+                            <input type="datetime-local" name="expiration_date"
+                                   class="block w-full px-4 py-3 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:ring-2 focus:ring-[#FF6B00] outline-none transition-all text-sm text-gray-500">
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" name="city" value="新竹市">
+                <input type="hidden" name="district" value="東區">
+                <input type="hidden" name="street" value="大學路">
+                <input type="hidden" name="number" value="1001號">
             </div>
         </div>
 
-        <button type="button" onclick="addItem()" style="background-color: #17a2b8; color: white; padding: 5px 10px; margin-bottom: 20px; cursor: pointer;">
-            ➕ 再加一樣物品
-        </button>
-        <br>
+        <div class="space-y-4">
+            <div class="flex items-center justify-between px-2">
+                <h3 class="text-lg font-bold text-gray-800 flex items-center">
+                    <i data-feather="box" class="w-5 h-5 mr-2 text-[#FF6B00]"></i> 物品明細
+                </h3>
+            </div>
 
-        <button type="submit" style="background-color: #28a745; color: white; padding: 10px 30px; border: none; cursor: pointer; font-size: 18px;">
-            🚀 全部刊登
-        </button>
+            <div id="items-container" class="space-y-4">
+                <div class="item-row bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 w-full text-left">
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">物品名稱</label>
+                            <input type="text" name="item_name" required placeholder="物品名稱"
+                                   class="block w-full px-3 py-2 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-1 focus:ring-[#FF6B00] outline-none text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">數量</label>
+                            <input type="number" name="quantity" value="1" min="1" required
+                                   class="block w-full px-3 py-2 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-1 focus:ring-[#FF6B00] outline-none text-sm transition">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">分類</label>
+                            <select name="category_id" class="block w-full px-3 py-2 bg-gray-50 border-transparent rounded-xl focus:bg-white focus:ring-1 focus:ring-[#FF6B00] outline-none text-sm transition cursor-pointer">
+                                {% for cat in categories %}
+                                    <option value="{{ cat['category_id'] }}">{{ cat['name'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <button type="button" onclick="removeRow(this)" 
+                            class="p-2.5 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition duration-200 flex-shrink-0">
+                        <i data-feather="trash-2" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" onclick="addItem()" 
+                    class="w-full py-4 border-2 border-dashed border-gray-200 rounded-2xl text-gray-400 font-bold text-sm hover:border-[#FF6B00] hover:text-[#FF6B00] hover:bg-[#FFF0E6]/30 transition-all flex items-center justify-center gap-2">
+                <i data-feather="plus-circle" class="w-4 h-4"></i> 再加一樣物品
+            </button>
+        </div>
+
+        <div class="pt-6">
+            <button type="submit" 
+                    class="w-full bg-black text-white py-4 rounded-2xl font-bold text-lg hover:bg-[#FF6B00] shadow-xl shadow-gray-200 transform active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-3">
+                <i data-feather="send" class="w-5 h-5"></i> 全部刊登
+            </button>
+        </div>
     </form>
+</div>
 
-    <script>
-        function addItem() {
-            // 1. 找到容器
-            const container = document.getElementById('items-container');
-            // 2. 找到第一個 item-row 當作範本
-            const firstRow = container.querySelector('.item-row');
-            // 3. 複製它 (cloneNode(true) 代表連裡面的子元素一起複製)
-            const newRow = firstRow.cloneNode(true);
-            
-            // 4. 清空新複製出來的輸入框內容 (不然會留著上一格的字)
-            const inputs = newRow.querySelectorAll('input');
-            inputs.forEach(input => input.value = input.type === 'number' ? 1 : ''); // 數量重設為1，文字清空
-            
-            // 5. 放進容器
-            container.appendChild(newRow);
+<script>
+    function addItem() {
+        const container = document.getElementById('items-container');
+        const firstRow = container.querySelector('.item-row');
+        const newRow = firstRow.cloneNode(true);
+        
+        // 清空輸入內容
+        const inputs = newRow.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.value = input.type === 'number' ? 1 : '';
+        });
+
+        // 如果原本的行有 Feather 圖示，複製過來可能會變成 SVG，需要處理
+        // 這裡簡單的做法是直接添加，然後重新執行 feather.replace()
+        container.appendChild(newRow);
+        if (typeof feather !== 'undefined') {
+            feather.replace();
         }
+    }
 
-        function removeRow(btn) {
-            const container = document.getElementById('items-container');
-            // 確保至少留一行，不要全部刪光光
-            if (container.querySelectorAll('.item-row').length > 1) {
-                btn.closest('.item-row').remove();
-            } else {
-                alert("至少要有一樣物品喔！");
-            }
+    function removeRow(btn) {
+        const container = document.getElementById('items-container');
+        if (container.querySelectorAll('.item-row').length > 1) {
+            btn.closest('.item-row').remove();
+        } else {
+            alert("至少要有一樣物品喔！");
         }
-    </script>
-
+    }
+</script>
 {% endblock %}

@@ -12,7 +12,7 @@ app.secret_key = os.getenv("SECRET_KEY") # 這邊可以隨便放一個字串，�
 
 # 這裡設定資料庫
 DB_HOST = "localhost"
-DB_NAME = "final"  # 資料庫的名稱
+DB_NAME = "aogDB"  # 資料庫的名稱
 DB_USER = "postgres"  # 使用者帳號，預設應該都是 postgres
 DB_PASS = os.getenv("DB_PASSWORD")   # 設定的密碼，寫在 .env 裡面
 DB_PORT = "5432"
@@ -38,55 +38,55 @@ def index():
         view_mode = session.get('saved_view_mode', 'post')
 
     category_filter = request.args.get('category')
+    search_query = request.args.get('q', '') # 獲取關鍵字搜尋參數
 
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
-    user_id = session.get('user_id')
 
+    # 取得所有分類供側邊欄使用
     cur.execute("SELECT * FROM categories ORDER BY category_id ASC")
     all_categories = cur.fetchall()
 
     if view_mode == 'item':
-        cnt_sql = """
-        SELECT sum(i.quantity)
-        FROM item i
-        JOIN post p ON i.post_id = p.post_id
-        LEFT JOIN categories c ON i.category_id = c.category_id
-        WHERE i.quantity > 0
-        """
-        cnt_params = []
+        # --- [修正 1] 先處理搜尋與過濾參數 ---
+        query_params = []
+        filter_sql = ""
         
         if category_filter:
-            cnt_sql += " AND c.category_id = %s"
-            cnt_params.append(category_filter)
+            filter_sql += " AND c.category_id = %s"
+            query_params.append(category_filter)
+        
+        if search_query:
+            filter_sql += " AND (i.item_name ILIKE %s OR p.description ILIKE %s)"
+            query_params.append(f'%{search_query}%')
+            query_params.append(f'%{search_query}%')
 
-        cur.execute(cnt_sql, tuple(cnt_params))
+        # --- [修正 2] 計算總數 (也要包含搜尋條件) ---
+        cnt_sql = f"""
+            SELECT sum(i.quantity)
+            FROM item i
+            JOIN post p ON i.post_id = p.post_id
+            LEFT JOIN categories c ON i.category_id = c.category_id
+            WHERE i.quantity > 0 {filter_sql}
+        """
+        cur.execute(cnt_sql, tuple(query_params))
         result = cur.fetchone()
         cnt = result[0] if result and result[0] else 0
 
-        sql = """
-        SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
-               c.name, c.category_id,
-               p.description, p.available, 
-               l.location_name, l.city, l.district, l.street, l.number,
-               u.name as user_name, u.user_id
-        FROM item i 
-        LEFT JOIN post p ON i.post_id = p.post_id
-        LEFT JOIN location l ON i.location_id = l.location_id
-        LEFT JOIN categories c ON i.category_id = c.category_id
-        LEFT JOIN users u ON p.user_id = u.user_id
-        WHERE i.quantity > 0
-        """
-        query_params = []
-
-        if category_filter:
-            sql += " AND c.category_id = %s"
-            query_params.append(category_filter)
-
-        sql += """
-        ORDER BY i.quantity DESC,
-                 p.post_id DESC,
-                 c.category_id ASC
+        # --- [修正 3] 取得物品資料 (共用 filter_sql) ---
+        sql = f"""
+            SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
+                   c.name, c.category_id,
+                   p.description, p.available, 
+                   l.location_name, l.city, l.district, l.street, l.number,
+                   u.name as user_name, u.user_id
+            FROM item i 
+            LEFT JOIN post p ON i.post_id = p.post_id
+            LEFT JOIN location l ON i.location_id = l.location_id
+            LEFT JOIN categories c ON i.category_id = c.category_id
+            LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE i.quantity > 0 {filter_sql}
+            ORDER BY i.quantity DESC, p.post_id DESC, c.category_id ASC
         """
         cur.execute(sql, tuple(query_params))
         items = cur.fetchall()
@@ -99,31 +99,36 @@ def index():
                                items=items, 
                                total=cnt,
                                categories=all_categories,
-                               current_category=category_filter)
+                               current_category=category_filter,
+                               q=search_query) # 傳回搜尋字，讓搜尋框能顯示
     
     else:
-        sql = """
-        SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
-               c.name, c.category_id,
-               p.description, p.available, p.post_id,
-               l.location_name, l.city, l.district, l.street, l.number,
-               u.name as user_name, u.user_id
-        FROM item i
-        LEFT JOIN post p ON i.post_id = p.post_id
-        LEFT JOIN location l ON i.location_id = l.location_id
-        LEFT JOIN categories c ON i.category_id = c.category_id
-        LEFT JOIN users u ON p.user_id = u.user_id
-        WHERE p.available = TRUE
-        """
+        # --- [修正 4] 貼文模式搜尋邏輯 ---
         query_params = []
+        filter_sql = ""
 
         if category_filter:
-            sql += " AND c.category_id = %s"
+            filter_sql += " AND c.category_id = %s"
             query_params.append(category_filter)
+        
+        if search_query:
+            filter_sql += " AND (i.item_name ILIKE %s OR p.description ILIKE %s)"
+            query_params.append(f'%{search_query}%')
+            query_params.append(f'%{search_query}%')
 
-        sql += """
-        ORDER BY p.post_id DESC,
-            c.category_id ASC
+        sql = f"""
+            SELECT i.item_id, i.item_name, i.quantity, i.expiration_date,
+                   c.name, c.category_id,
+                   p.description, p.available, p.post_id,
+                   l.location_name, l.city, l.district, l.street, l.number,
+                   u.name as user_name, u.user_id
+            FROM item i
+            LEFT JOIN post p ON i.post_id = p.post_id
+            LEFT JOIN location l ON i.location_id = l.location_id
+            LEFT JOIN categories c ON i.category_id = c.category_id
+            LEFT JOIN users u ON p.user_id = u.user_id
+            WHERE p.available = TRUE {filter_sql}
+            ORDER BY p.post_id DESC, c.category_id ASC
         """
 
         cur.execute(sql, tuple(query_params))
@@ -132,7 +137,6 @@ def index():
         conn.close()
 
         posts_map = {}
-
         for i in data:
             p_id = i['post_id']
             if p_id not in posts_map:
@@ -145,29 +149,20 @@ def index():
                     'owner_id': i['user_id']
                 }
 
-            item_data = {
+            posts_map[p_id]['items'].append({
                 'item_id': i['item_id'],
                 'item_name': i['item_name'],
                 'quantity': i['quantity'],
-                'expiration_date': i['expiration_date'],
-                'location_name': i['location_name'],
-                'city': i['city'],
-                'district': i['district'],
-                'street': i['street'],
-                'number': i['number'],
                 'category_name': i['name']
-            }
-
-            posts_map[p_id]['items'].append(item_data)
+            })
         
-        total_posts = len(posts_map)
-
         return render_template('index_post.html', 
                                view_mode="post", 
                                posts=list(posts_map.values()),
-                               total=total_posts,
+                               total=len(posts_map),
                                categories=all_categories,
-                               current_category=category_filter)
+                               current_category=category_filter,
+                               q=search_query) # 傳回搜尋字
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
