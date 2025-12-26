@@ -1,85 +1,87 @@
 {% extends "base.html" %}
 
 {% block content %}
-
-    <div class="view-switch-container" style="margin-bottom: 10px;">
-        <a href="{{ url_for('index', view='post', category=current_category) }}" class="btn btn-switch active">📋 貼文檢視</a>
-        <a href="{{ url_for('index', view='item', category=current_category) }}" class="btn btn-switch">📦 物品檢視</a>
-    </div>
-
-    <div class="category-filter" style="margin-bottom: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px;">
-        <strong>🔍 篩選類別：</strong>
-        
-        <a href="{{ url_for('index', view=view_mode) }}" 
-           style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline;' if not current_category else '' }}">
-           全部
-        </a>
-
-        {% for cat in categories %}
-            <a href="{{ url_for('index', view=view_mode, category=cat['category_id']) }}" 
-               style="margin-right: 10px; {{ 'font-weight: bold; text-decoration: underline; color: red;' if current_category|string == cat['category_id']|string else '' }}">
-               {{ cat['name'] }}
-            </a>
-        {% endfor %}
-    </div>
-
-    <h1>🎁 校園贈物清單</h1>
-    <p>歡迎來到交大/清大贈物網！目前共有 <strong>{{ total }}</strong> 樣物品。</p>
+<div class="flex flex-col md:flex-row gap-8">
     
-    <table border="1" cellpadding="10" style="border-collapse: collapse;">
-        <thead>
-            <tr>
-                <th>物品名稱</th>
-                <th>敘述</th>
-                <th>數量</th>
-                <th>地點</th>
-                <th>狀態</th>
-                <th>操作</th>
-                <th>提供者</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in items %}
-            <tr>
-                <td>{{ item['item_name'] }}</td>
-                <td>{{ item['description'] }}</td>
-                <td>{{ item['quantity'] }}</td>
-                <td>{{ item['location_name'] }}</td>
-                
-                <td>
-                    {% if item['available'] %}
-                        <span style="color: green;">可索取</span>
-                    {% else %}
-                        <span style="color: red;">已下架</span>
-                    {% endif %}
-                </td>
-
-                <td>
-                    {% if item['available'] and item['quantity'] > 0 %}
-                        {% if session.get('user_id') %}
-                            <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" style="display: flex; gap: 5px; align-items: center;">
-    
-                                <input type="number" name="want_quantity" min="1" max="{{ item['quantity'] }}" value="1" style="width: 60px; padding: 5px;">
-                                
-                                <button type="submit" style="cursor: pointer; background-color: #4CAF50; color: white; border: none; padding: 5px 10px;">
-                                    索取
-                                </button>
-                            </form>
-                        {% else %}
-                            <a href="/login" style="color: blue;">登入後索取</a>
-                        {% endif %}
-                    {% else %}
-                        <span style="color: gray;">來晚了</span>
-                    {% endif %} 
-                </td>
-
-                <td>
-                    <a href="{{ url_for('public_profile', target_user_id=item['user_id']) }}">
-                        {{ item['user_name'] }}
+    <aside class="w-full md:w-64 flex-shrink-0">
+        <div class="bg-white rounded-2xl shadow-sm p-6 sticky top-24 border border-gray-100">
+            <h3 class="font-bold text-lg mb-6 flex items-center text-gray-800">
+                <i data-feather="grid" class="w-5 h-5 mr-2 text-[#FF6B00]"></i> 物品分類
+            </h3>
+            <ul class="space-y-2">
+                <li>
+                    <a href="{{ url_for('index', view=view_mode) }}" 
+                       class="block px-4 py-2.5 rounded-xl transition-all duration-200 {% if not current_category %}bg-[#FFF0E6] text-[#FF6B00] font-bold shadow-sm{% else %}text-gray-500 hover:bg-gray-50 hover:text-[#FF6B00]{% endif %}">
+                       全部物品
                     </a>
-                </td>
-            </tr>
+                </li>
+                {% for cat in categories %}
+                <li>
+                    <a href="{{ url_for('index', view=view_mode, category=cat['category_id']) }}" 
+                       class="block px-4 py-2.5 rounded-xl transition-all duration-200 {% if current_category|string == cat['category_id']|string %}bg-[#FFF0E6] text-[#FF6B00] font-bold shadow-sm{% else %}text-gray-500 hover:bg-gray-50 hover:text-[#FF6B00]{% endif %}">
+                       {{ cat['name'] }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </aside>
+
+    <div class="flex-1">
+        <div class="flex flex-col sm:flex-row justify-between items-center mb-10 gap-6">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">📦 物品檢視</h1>
+                <p class="text-gray-500 mt-1">目前共有 <span class="text-[#FF6B00] font-semibold">{{ total }}</span> 樣物品</p>
+            </div>
+
+            <div class="relative bg-gray-200 rounded-full p-1.5 flex items-center w-56 h-12 shadow-inner cursor-pointer"
+                 onclick="window.location.href='{{ url_for('index', view='post', category=current_category) }}'">
+                <div class="absolute top-1.5 bottom-1.5 w-[calc(50%-6px)] bg-white rounded-full shadow-md transition-all duration-300 translate-x-[calc(100%+6px)]"></div>
+                <span class="relative z-10 flex-1 text-center text-xs font-bold text-gray-400">貼文檢視</span>
+                <span class="relative z-10 flex-1 text-center text-xs font-bold text-[#FF6B00]">物品檢視</span>
+            </div>
+        </div>
+
+        <div class="grid gap-6 grid-cols-1 xl:grid-cols-2">
+            {% for item in items %}
+            <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100 p-5 group">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="bg-[#FFF0E6] p-3 rounded-xl group-hover:scale-110 transition-transform">
+                        <i data-feather="package" class="text-[#FF6B00] w-6 h-6"></i>
+                    </div>
+                    <span class="text-xs px-3 py-1 rounded-full font-medium {% if item['available'] %}bg-green-100 text-green-600{% else %}bg-red-100 text-red-600{% endif %}">
+                        {{ '可索取' if item['available'] else '已下架' }}
+                    </span>
+                </div>
+                <h4 class="text-lg font-bold text-gray-800 mb-1">{{ item['item_name'] }}</h4>
+                <p class="text-sm text-gray-500 line-clamp-2 mb-4">{{ item['description'] }}</p>
+                
+                <div class="flex flex-wrap gap-4 text-xs text-gray-400 mb-6">
+                    <span class="flex items-center"><i data-feather="map-pin" class="w-3 h-3 mr-1"></i>{{ item['location_name'] }}</span>
+                    <span class="flex items-center"><i data-feather="box" class="w-3 h-3 mr-1"></i>數量: {{ item['quantity'] }}</span>
+                    <a href="{{ url_for('public_profile', target_user_id=item['user_id']) }}" class="flex items-center text-[#FF6B00] hover:underline">
+                        <i data-feather="user" class="w-3 h-3 mr-1"></i>{{ item['user_name'] }}
+                    </a>
+                </div>
+
+                {% if item['available'] and item['quantity'] > 0 %}
+                    <form action="{{ url_for('claim', item_id=item['item_id']) }}" method="POST" class="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-gray-50">
+                        <div class="flex items-center group">
+                            <label class="text-[10px] text-gray-400 mr-2 uppercase font-bold">數量</label>
+                            <input type="number" name="want_quantity" min="1" max="{{ item['quantity'] }}" value="1" 
+                                class="w-14 h-10 border border-gray-200 rounded-lg text-center text-sm outline-none focus:ring-2 focus:ring-[#FF6B00] focus:border-transparent transition-all">
+                        </div>
+                        
+                        <button type="submit" class="w-32 h-10 bg-black text-white rounded-xl text-sm font-bold hover:bg-[#FF6B00] transform active:scale-95 transition-all duration-200 shadow-sm">
+                            立即索取
+                        </button>
+                    </form>
+                {% else %}
+                    <button disabled class="w-full bg-gray-100 text-gray-400 py-2.5 rounded-xl text-sm font-bold cursor-not-allowed">來晚了</button>
+                {% endif %}
+            </div>
             {% endfor %}
-            </tbody>
-    </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

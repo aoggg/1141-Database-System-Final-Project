@@ -23,8 +23,8 @@
             </a>
             
             <div class="hidden md:flex space-x-8 text-sm font-medium">
-                <a href="{{ url_for('index', view='post') }}" class="hover:text-[#FF6B00] transition">瀏覽貼文</a>
-                <a href="{{ url_for('index', view='item') }}" class="hover:text-[#FF6B00] transition">瀏覽單品</a>
+                <!-- <a href="{{ url_for('index', view='post') }}" class="hover:text-[#FF6B00] transition">瀏覽貼文</a>
+                <a href="{{ url_for('index', view='item') }}" class="hover:text-[#FF6B00] transition">瀏覽單品</a> -->
                 {% if session.get('user_id') %}
                     <a href="{{ url_for('post_item') }}" class="text-[#FF6B00] hover:text-[#FF8A3D] transition">+ 我要贈送</a>
                 {% endif %}
