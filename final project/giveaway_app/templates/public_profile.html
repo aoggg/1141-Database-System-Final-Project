@@ -32,10 +32,27 @@
                         {% endif %}
                     </div>
                 </div>
-                <div class="bg-[#FFF0E6] p-4 rounded-2xl border border-[#FF6B00]/20 text-center min-w-[120px]">
-                    <span class="block text-[10px] uppercase font-bold text-[#FF6B00] mb-1 tracking-widest">用戶評分</span>
-                    <span class="text-3xl font-black text-[#FF6B00]">{{ "%.1f"|format(user['avg_score']) }}</span>
-                    <span class="block text-[10px] text-[#FF6B00]/70 mt-1">{{ user['review_count'] }} 則評價</span>
+                <!-- 用戶評分 -->
+                <div class="{% if user['review_count'] > 0 %}bg-[#FFF0E6] border-[#FF6B00]/20{% else %}bg-gray-100 border-gray-200{% endif %} p-4 rounded-2xl border text-center min-w-[120px]">
+                    <span class="block text-[10px] uppercase font-bold {% if user['review_count'] > 0 %}text-[#FF6B00]{% else %}text-gray-400{% endif %} mb-1 tracking-widest">
+                        用戶評分
+                    </span>
+
+                    <span class="text-3xl font-black {% if user['review_count'] > 0 %}text-[#FF6B00]{% else %}text-gray-400{% endif %}">
+                        {% if user['review_count'] > 0 %}
+                            {{ "%.1f"|format(user['avg_score']) }}
+                        {% else %}
+                            ?
+                        {% endif %}
+                    </span>
+
+                    <span class="block text-[10px] {% if user['review_count'] > 0 %}text-[#FF6B00]/70{% else %}text-gray-400{% endif %} mt-1">
+                        {% if user['review_count'] > 0 %}
+                            {{ user['review_count'] }} 人評價
+                        {% else %}
+                            尚無評價
+                        {% endif %}
+                    </span>
                 </div>
             </div>
         </div>

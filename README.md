@@ -24,9 +24,10 @@ schema 的部分主要根據 milestone2 裡的 ERdiagram 畫出來，但有一�
 
 ### 3. 建立 .env 檔案
 
-創一個 `.env` 檔案，裡面放兩行。
+創一個 `.env` 檔案，裡面放三行。
 ```
 DB_PASSWORD=postgres的密碼
+DB_NAME=在postgres中用的DB名稱
 SECRET_KEY=應該是隨便一個字串就好了
 ```
 ### 4. 啟動
